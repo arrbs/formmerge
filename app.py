@@ -20,7 +20,13 @@ st.markdown(
     }
     [data-testid="stAppViewContainer"] {
         background: radial-gradient(circle at top left, rgba(0, 0, 72, 0.75), rgba(0, 0, 50, 0.95) 55%, #000022 100%);
-        color: var(--fuselage-grey);
+        color: rgba(245, 245, 255, 0.86);
+    }
+    .block-container p,
+    .block-container label,
+    .block-container span,
+    .block-container .stMarkdown {
+        color: rgba(245, 245, 255, 0.86);
     }
     [data-testid="stSidebar"],
     [data-testid="stSidebarCollapsedControl"] {
@@ -84,15 +90,22 @@ st.markdown(
         box-shadow: 0 0 12px rgba(255, 65, 0, 0.45);
     }
     .panel-card {
-        background: var(--fuselage-grey);
+        background: #FFFFFF;
         border-radius: 22px;
         padding: 1.6rem 1.9rem 1.8rem;
         box-shadow: 0 32px 68px rgba(0, 0, 0, 0.28);
         border: 1px solid rgba(0, 0, 50, 0.08);
         position: relative;
+        color: rgba(5, 5, 30, 0.88);
+    }
+    .panel-card p,
+    .panel-card label,
+    .panel-card span,
+    .panel-card .stMarkdown {
+        color: rgba(5, 5, 30, 0.75) !important;
     }
     .panel-card--order {
-        background: rgba(245, 245, 245, 0.98);
+        background: rgba(255, 255, 255, 0.98);
     }
     .panel-title {
         font-size: 1.18rem;
@@ -133,7 +146,7 @@ st.markdown(
         font-weight: 500;
     }
     .sortable-container {
-        background: rgba(210, 190, 170, 0.15);
+        background: rgba(255, 255, 255, 0.94);
         border-radius: 12px;
         padding: 0.75rem 0.6rem 0.75rem 0.75rem;
         box-shadow: inset 0 0 0 1px rgba(0, 0, 50, 0.06);
@@ -145,7 +158,7 @@ st.markdown(
         border-radius: 10px;
         padding: 0.6rem 0.85rem;
         margin-bottom: 0.38rem;
-        background: linear-gradient(100deg, rgba(210, 190, 170, 0.22) 0%, rgba(245, 245, 245, 0.93) 100%);
+        background: linear-gradient(100deg, rgba(210, 190, 170, 0.22) 0%, rgba(255, 255, 255, 0.93) 100%);
         color: var(--obsidian-blue);
         font-weight: 600;
         font-size: 0.9rem;
@@ -184,13 +197,17 @@ st.markdown(
     }
     [data-testid="stFileUploaderDropzone"] {
         border: 2px dashed rgba(0, 0, 50, 0.14) !important;
-        background: rgba(245, 245, 245, 0.96) !important;
+        background: rgba(255, 255, 255, 0.96) !important;
         border-radius: 18px !important;
     }
+    [data-testid="stFileUploaderDropzone"] * {
+        color: rgba(0, 0, 50, 0.72) !important;
+    }
     div[data-baseweb="select"] > div {
-        background: var(--fuselage-grey) !important;
+        background: #FFFFFF !important;
         border-radius: 12px !important;
         border: 1px solid rgba(0, 0, 50, 0.12) !important;
+        color: rgba(5, 5, 30, 0.88) !important;
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
     }
     div[data-baseweb="select"] svg {
