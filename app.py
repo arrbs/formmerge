@@ -19,7 +19,7 @@ st.markdown(
     }
     
     [data-testid="stAppViewContainer"] {
-        background: var(--grey);
+        background: var(--blue);
     }
     
     [data-testid="stSidebar"],
@@ -28,28 +28,30 @@ st.markdown(
     }
     
     .block-container {
-        max-width: 960px;
+        max-width: 700px;
         padding: 3rem 1.5rem;
     }
     
     h1 {
-        color: var(--blue);
-        font-size: 2rem;
+        color: white;
+        font-size: 2.2rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
+        text-align: center;
     }
     
     .subtitle {
-        color: #6B7280;
+        color: var(--grey);
         font-size: 1rem;
         margin-bottom: 2.5rem;
+        text-align: center;
+        opacity: 0.9;
     }
     
     .panel {
         background: white;
         border-radius: 12px;
         padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 50, 0.1);
         margin-bottom: 1rem;
     }
     
@@ -70,7 +72,7 @@ st.markdown(
         background: var(--grey);
         border-radius: 8px;
         padding: 0.5rem;
-        max-height: 280px;
+        max-height: 320px;
         overflow-y: auto;
     }
     
@@ -105,24 +107,24 @@ st.markdown(
     }
     
     .stButton>button, .stDownloadButton>button {
-        background: var(--orange);
+        background: var(--orange) !important;
         border: none;
-        color: white;
+        color: white !important;
         border-radius: 6px;
         font-weight: 600;
-        padding: 0.625rem 1.5rem;
+        padding: 0.75rem 1.5rem;
         transition: all 0.2s;
     }
     
     .stButton>button:hover, .stDownloadButton>button:hover {
-        background: #E63A00;
+        background: #E63A00 !important;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(255, 65, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(255, 65, 0, 0.4);
     }
     
     .stButton>button:disabled {
-        background: #E5E7EB !important;
-        color: #9CA3AF !important;
+        background: #6B7280 !important;
+        color: #D1D5DB !important;
         cursor: not-allowed;
     }
     
@@ -130,12 +132,6 @@ st.markdown(
         border: 2px dashed #D1D5DB !important;
         background: var(--grey) !important;
         border-radius: 8px !important;
-    }
-    
-    div[data-baseweb="select"] > div {
-        background: white !important;
-        border: 1px solid #E5E7EB !important;
-        border-radius: 6px !important;
     }
     
     ::-webkit-scrollbar {
@@ -281,22 +277,19 @@ def main() -> None:
     image_format = "JPEG"
     jpeg_quality = DEFAULT_JPEG_QUALITY
 
-    col1, col2 = st.columns(2, gap="medium")
+    st.markdown("<div class='panel'>", unsafe_allow_html=True)
+    st.markdown("<div class='panel-title'>Upload PDFs</div>", unsafe_allow_html=True)
+    uploaded_files = st.file_uploader(
+        "Upload PDFs",
+        type=["pdf"],
+        accept_multiple_files=True,
+        label_visibility="collapsed",
+    )
+    if uploaded_files:
+        cache_uploaded_files(uploaded_files)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    with col1:
-        st.markdown("<div class='panel'>", unsafe_allow_html=True)
-        st.markdown("<div class='panel-title'>Upload</div>", unsafe_allow_html=True)
-        uploaded_files = st.file_uploader(
-            "Upload PDFs",
-            type=["pdf"],
-            accept_multiple_files=True,
-            label_visibility="collapsed",
-        )
-        if uploaded_files:
-            cache_uploaded_files(uploaded_files)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with col2:
+    if st.session_state["pdf_files"]:
         st.markdown("<div class='panel'>", unsafe_allow_html=True)
         render_uploaded_list()
         st.markdown("</div>", unsafe_allow_html=True)
