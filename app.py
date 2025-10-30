@@ -15,11 +15,11 @@ st.markdown(
     :root {
         --orange: #FF4100;
         --blue: #000032;
-        --blue-light: #E8EDF5;
+        --grey: #F5F5F5;
     }
     
     [data-testid="stAppViewContainer"] {
-        background: linear-gradient(to bottom, #FAFBFC 0%, var(--blue-light) 100%);
+        background: var(--grey);
     }
     
     [data-testid="stSidebar"],
@@ -29,7 +29,7 @@ st.markdown(
     
     .block-container {
         max-width: 960px;
-        padding: 2.5rem 1.5rem;
+        padding: 3rem 1.5rem;
     }
     
     h1 {
@@ -40,101 +40,102 @@ st.markdown(
     }
     
     .subtitle {
-        color: #5B6B7D;
+        color: #6B7280;
         font-size: 1rem;
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
     }
     
     .panel {
         background: white;
-        border-radius: 16px;
+        border-radius: 12px;
         padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 32, 0.08);
+        box-shadow: 0 1px 3px rgba(0, 0, 50, 0.1);
         margin-bottom: 1rem;
     }
     
     .panel-title {
         color: var(--blue);
         font-weight: 600;
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
     }
     
     .panel-text {
-        color: #5B6B7D;
-        font-size: 0.9rem;
+        color: #6B7280;
+        font-size: 0.875rem;
         margin-bottom: 1rem;
     }
     
     .sortable-container {
-        background: #F8F9FA;
-        border-radius: 12px;
-        padding: 0.75rem;
+        background: var(--grey);
+        border-radius: 8px;
+        padding: 0.5rem;
         max-height: 280px;
         overflow-y: auto;
     }
     
     .sortable-item {
         background: white;
-        border: 1px solid #E1E4E8;
-        border-radius: 8px;
+        border: 1px solid #E5E7EB;
+        border-radius: 6px;
         padding: 0.75rem;
         margin-bottom: 0.5rem;
         color: var(--blue);
         font-weight: 500;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
+        cursor: grab;
     }
     
     .sortable-item:last-child {
         margin-bottom: 0;
     }
     
-    .info-text {
-        color: #5B6B7D;
-        font-size: 0.85rem;
-        margin-top: 0.5rem;
+    .sortable-item:hover {
+        border-color: var(--orange);
     }
     
     .empty-state {
-        background: #F8F9FA;
+        background: var(--grey);
         border: 1px dashed #D1D5DB;
-        border-radius: 12px;
+        border-radius: 8px;
         padding: 2rem;
         text-align: center;
-        color: #8B95A5;
+        color: #9CA3AF;
+        font-size: 0.875rem;
     }
     
     .stButton>button, .stDownloadButton>button {
         background: var(--orange);
         border: none;
         color: white;
-        border-radius: 24px;
+        border-radius: 6px;
         font-weight: 600;
-        padding: 0.65rem 2rem;
-        box-shadow: 0 4px 12px rgba(255, 65, 0, 0.25);
+        padding: 0.625rem 1.5rem;
+        transition: all 0.2s;
     }
     
     .stButton>button:hover, .stDownloadButton>button:hover {
         background: #E63A00;
-        box-shadow: 0 6px 16px rgba(255, 65, 0, 0.35);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 65, 0, 0.3);
     }
     
     .stButton>button:disabled {
-        background: #E1E4E8 !important;
-        color: #8B95A5 !important;
-        box-shadow: none;
+        background: #E5E7EB !important;
+        color: #9CA3AF !important;
+        cursor: not-allowed;
     }
     
     [data-testid="stFileUploaderDropzone"] {
         border: 2px dashed #D1D5DB !important;
-        background: #FAFBFC !important;
-        border-radius: 12px !important;
+        background: var(--grey) !important;
+        border-radius: 8px !important;
     }
     
     div[data-baseweb="select"] > div {
         background: white !important;
-        border: 1px solid #E1E4E8 !important;
-        border-radius: 8px !important;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 6px !important;
     }
     
     ::-webkit-scrollbar {
@@ -142,7 +143,7 @@ st.markdown(
     }
     
     ::-webkit-scrollbar-track {
-        background: #F0F0F0;
+        background: #E5E7EB;
     }
     
     ::-webkit-scrollbar-thumb {
@@ -248,7 +249,7 @@ def render_uploaded_list() -> None:
 
     total_pages = sum(item["pages"] for item in files)
     st.markdown(
-        f"<div class='panel-text'>{len(files)} files · {total_pages} pages total</div>",
+        f"<div class='panel-text'>{len(files)} files · {total_pages} pages</div>",
         unsafe_allow_html=True,
     )
 
@@ -265,33 +266,6 @@ def render_uploaded_list() -> None:
         mapping = {label: entry for label, entry in zip(display_labels, files)}
         st.session_state["pdf_files"] = [mapping[label] for label in reordered]
         st.rerun()
-
-    st.markdown("<div class='info-text'>Drag to reorder</div>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        option_pairs = [
-            (f"{index + 1}. {item['name']}", item["id"])
-            for index, item in enumerate(files)
-        ]
-        option_labels = [label for label, _ in option_pairs]
-        selected_label = st.selectbox(
-            "Remove",
-            ["—"] + option_labels,
-            index=0,
-            label_visibility="collapsed",
-            key="remove-select",
-        )
-        if selected_label != "—":
-            chosen_map = {label: value for label, value in option_pairs}
-            remove_item(chosen_map[selected_label])
-            st.rerun()
-    
-    with col2:
-        if st.button("Clear All", use_container_width=True, key="clear-list"):
-            st.session_state["pdf_files"] = []
-            st.session_state["last_output"] = None
-            st.rerun()
 
 
 def main() -> None:
