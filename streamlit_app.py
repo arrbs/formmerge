@@ -206,12 +206,6 @@ def main() -> None:
                         st.session_state.pdf_files.insert(i + 1, st.session_state.pdf_files.pop(i))
                         st.rerun()
 
-            st.write("") # Spacer
-            if st.button("Clear All Files", use_container_width=False):
-                st.session_state.pdf_files = []
-                st.session_state.last_output = None
-                st.rerun()
-
     # --- 3. Merge and Download ---
     can_merge = bool(st.session_state.pdf_files)
     
@@ -258,6 +252,14 @@ def main() -> None:
                 mime="application/pdf",
                 use_container_width=True,
             )
+        
+        # Add "Merge Another" button
+        st.write("")  # Spacer
+        if st.button("📄 Merge Another File", use_container_width=True):
+            st.session_state.pdf_files = []
+            st.session_state.last_output = None
+            st.session_state.show_download = False
+            st.rerun()
 
 if __name__ == "__main__":
     main()
