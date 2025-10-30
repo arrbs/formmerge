@@ -7,7 +7,73 @@ import fitz
 import streamlit as st
 from streamlit_sortables import sort_items
 
-st.set_page_config(page_title="Reliable PDF Image Merger", layout="wide")
+st.set_page_config(page_title="Obsidian Merge Studio", layout="wide")
+
+st.markdown(
+    """
+    <style>
+    :root {
+        --fuselage-grey: #F5F5F5;
+        --warm-grey: #D2BEAA;
+        --essential-orange: #FF4100;
+        --obsidian-blue: #000032;
+    }
+    [data-testid="stAppViewContainer"] {
+        background-color: var(--fuselage-grey);
+        color: var(--obsidian-blue);
+    }
+    [data-testid="stSidebar"] {
+        background-color: var(--warm-grey);
+    }
+    [data-testid="stSidebar"] * {
+        color: var(--obsidian-blue) !important;
+    }
+    h1, h2, h3, h4, h5, h6, label, p, span {
+        color: var(--obsidian-blue);
+    }
+    .stButton>button, .stDownloadButton>button {
+        background-color: var(--essential-orange);
+        border: none;
+        color: white;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+    .stButton>button:hover, .stDownloadButton>button:hover {
+        background-color: #cc3300;
+        color: white;
+    }
+    [data-testid="stSlider"] [data-baseweb="slider"] > div > div {
+        background-color: var(--essential-orange);
+    }
+    [data-testid="stSlider"] [data-baseweb="slider"] [role="slider"] {
+        background-color: white;
+        border: 2px solid var(--essential-orange);
+    }
+    .block-container {
+        padding-top: 2rem;
+    }
+    .sortable-container {
+        background-color: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+    .sortable-item {
+        border: 1px solid rgba(0, 0, 50, 0.15);
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background-color: var(--fuselage-grey);
+        color: var(--obsidian-blue);
+        font-weight: 500;
+    }
+    .sortable-item:last-child {
+        margin-bottom: 0;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 def init_state() -> None:
@@ -50,7 +116,7 @@ def cache_uploaded_files(uploaded_files: List[st.runtime.uploaded_file_manager.U
                 "pages": page_count,
                 "size": len(file_bytes),
             }
-    )
+        )
 
 
 def remove_item(item_id: str) -> None:
@@ -97,7 +163,9 @@ def render_uploaded_list() -> None:
         f"{item['name']} — {item['pages']} pages — {human_file_size(item['size'])} (#{item['id'][:8]})"
         for item in files
     ]
+    st.markdown('<div class="sortable-container">', unsafe_allow_html=True)
     reordered = sort_items(display_labels, direction="vertical", key="pdf-order")
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if reordered and reordered != display_labels:
         mapping = {label: entry for label, entry in zip(display_labels, files)}
@@ -118,10 +186,17 @@ def render_uploaded_list() -> None:
 def main() -> None:
     init_state()
 
-    st.title("Reliable Fillable PDF Merger")
-    st.write(
-        "This app flattens each page into a high-resolution image before merging, preserving checkboxes, signatures, and other form data."
+    st.title("Obsidian Merge Studio")
+    st.title("Obsidian Merge Studio")
+    st.markdown(
+        """
+        <div style='background:#FFFFFF;border-left:6px solid #FF4100;padding:1rem 1.5rem;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);'>
+            Preserve the fidelity of every checkbox, signature, and handwritten note by rendering PDFs into true image layers before combining them.
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
+    st.caption("Palette: Fuselage Grey, Warm Grey, Essential Orange, Obsidian Blue")
 
     with st.sidebar:
         st.header("Workflow")
