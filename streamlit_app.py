@@ -93,16 +93,19 @@ def main() -> None:
             st.subheader("2. Arrange Files")
             st.write("Drag and drop the files to set the merge order.")
             
-            items_to_sort = [
-                {"header": f"{item['name']} ({item['pages']} pages)", "items": []}
+            # Create a list of strings (labels) for the sortable component
+            display_labels = [
+                f"{item['name']} ({item['pages']} pages)"
                 for item in st.session_state.pdf_files
             ]
             
-            sorted_items = sort_items(items_to_sort, multi_containers=False)
+            # When multi_containers is False, sort_items expects a list of strings
+            sorted_labels = sort_items(display_labels)
 
-            if sorted_items and sorted_items != items_to_sort:
+            # If the order has changed, update the session state
+            if sorted_labels and sorted_labels != display_labels:
                 original_map = {f"{item['name']} ({item['pages']} pages)": item for item in st.session_state.pdf_files}
-                st.session_state.pdf_files = [original_map[item['header']] for item in sorted_items]
+                st.session_state.pdf_files = [original_map[label] for label in sorted_labels]
                 st.rerun()
 
             if st.button("Clear All Files", use_container_width=False):
