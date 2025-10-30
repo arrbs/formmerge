@@ -115,6 +115,8 @@ def init_state() -> None:
         st.session_state["pdf_files"] = []
     if "last_output" not in st.session_state:
         st.session_state["last_output"] = None
+    if "uploader_key" not in st.session_state:
+        st.session_state["uploader_key"] = 0
 
 def cache_uploaded_files(uploaded_files: List[st.runtime.uploaded_file_manager.UploadedFile]) -> None:
     """Adds new files to session state, avoiding duplicates."""
@@ -182,7 +184,8 @@ def main() -> None:
             "Select one or more PDF files",
             type=["pdf"],
             accept_multiple_files=True,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            key=f"pdf_uploader_{st.session_state.uploader_key}"
         )
         if uploaded_files:
             cache_uploaded_files(uploaded_files)
@@ -259,6 +262,7 @@ def main() -> None:
             st.session_state.pdf_files = []
             st.session_state.last_output = None
             st.session_state.show_download = False
+            st.session_state.uploader_key += 1  # Increment key to reset uploader
             st.rerun()
 
 if __name__ == "__main__":
