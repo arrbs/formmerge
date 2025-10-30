@@ -86,7 +86,6 @@ def main() -> None:
         )
         if uploaded_files:
             cache_uploaded_files(uploaded_files)
-            st.rerun()
 
     # --- 2. File Reordering ---
     if st.session_state.pdf_files:
