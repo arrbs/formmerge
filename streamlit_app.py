@@ -77,37 +77,37 @@ def main() -> None:
     )
 
     # --- 1. File Uploader ---
-    with st.container(border=True):
-        st.subheader("1. Upload PDFs")
+    with st.expander("1. Upload PDFs", expanded=not st.session_state.pdf_files):
         uploaded_files = st.file_uploader(
             "Select one or more PDF files",
             type=["pdf"],
             accept_multiple_files=True,
+            label_visibility="collapsed"
         )
         if uploaded_files:
             cache_uploaded_files(uploaded_files)
+            st.rerun()
 
     # --- 2. File Reordering ---
     if st.session_state.pdf_files:
         with st.container(border=True):
             st.subheader("2. Arrange Files")
-            st.write("Drag and drop the files to set the merge order.")
-            
-            # Create a list of strings (labels) for the sortable component
-            display_labels = [
-                f"{item['name']} ({item['pages']} pages)"
-                for item in st.session_state.pdf_files
-            ]
-            
-            # When multi_containers is False, sort_items expects a list of strings
-            sorted_labels = sort_items(display_labels)
+            st.write("Use the buttons to set the merge order.")
 
-            # If the order has changed, update the session state
-            if sorted_labels and sorted_labels != display_labels:
-                original_map = {f"{item['name']} ({item['pages']} pages)": item for item in st.session_state.pdf_files}
-                st.session_state.pdf_files = [original_map[label] for label in sorted_labels]
-                st.rerun()
+            for i, item in enumerate(st.session_state.pdf_files):
+                col1, col2, col3 = st.columns([0.8, 0.1, 0.1])
+                with col1:
+                    st.text(f"{i+1}. {item['name']} ({item['pages']} pages)")
+                with col2:
+                    if st.button("⬆️", key=f"up_{i}", use_container_width=True, disabled=(i == 0)):
+                        st.session_state.pdf_files.insert(i - 1, st.session_state.pdf_files.pop(i))
+                        st.rerun()
+                with col3:
+                    if st.button("⬇️", key=f"down_{i}", use_container_width=True, disabled=(i == len(st.session_state.pdf_files) - 1)):
+                        st.session_state.pdf_files.insert(i + 1, st.session_state.pdf_files.pop(i))
+                        st.rerun()
 
+            st.write("") # Spacer
             if st.button("Clear All Files", use_container_width=False):
                 st.session_state.pdf_files = []
                 st.session_state.last_output = None
