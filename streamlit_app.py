@@ -143,7 +143,19 @@ def main() -> None:
             file_name=output["name"],
             mime="application/pdf",
             use_container_width=True,
+            key="download_merged_pdf"
         )
+        
+        # Auto-download by triggering the button via JavaScript
+        if merge_button:
+            st.markdown(
+                """
+                <script>
+                    window.parent.document.querySelector('[data-testid="stDownloadButton"] button').click();
+                </script>
+                """,
+                unsafe_allow_html=True
+            )
 
 if __name__ == "__main__":
     main()
