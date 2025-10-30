@@ -137,6 +137,10 @@ def remove_item(item_id: str) -> None:
     st.session_state["pdf_files"] = filtered
 
 
+DEFAULT_DPI = 200
+DEFAULT_JPEG_QUALITY = 85
+
+
 def flatten_pdfs(
     file_entries: List[dict], dpi: int, image_format: str, jpeg_quality: int
 ) -> Tuple[bytes, int]:
@@ -215,15 +219,10 @@ def main() -> None:
         st.write("1. Upload fillable PDFs.")
         st.write("2. Arrange their order.")
         st.write("3. Generate a flattened merged PDF.")
-        dpi = st.slider("Render DPI", min_value=150, max_value=400, value=300, step=25)
-        image_format = st.radio(
-            "Image Encoding",
-            options=["JPEG", "PNG"],
-            format_func=lambda value: "JPEG (smaller, recommended)" if value == "JPEG" else "PNG (lossless, largest)",
-        )
-        jpeg_quality = 85
-        if image_format == "JPEG":
-            jpeg_quality = st.slider("JPEG Quality", min_value=60, max_value=95, value=85, step=5)
+        st.info("Flattening at 200 DPI with JPEG quality 85 for optimal fidelity vs size.")
+        dpi = DEFAULT_DPI
+        image_format = "JPEG"
+        jpeg_quality = DEFAULT_JPEG_QUALITY
         if st.button("Clear All"):
             st.session_state["pdf_files"] = []
             st.session_state["last_output"] = None
