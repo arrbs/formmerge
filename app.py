@@ -1,11 +1,11 @@
 import hashlib
-import io
 import uuid
 from datetime import datetime
 from typing import List, Tuple
 
 import fitz
 import streamlit as st
+from streamlit_sortables import sort_items
 
 st.set_page_config(page_title="Reliable PDF Image Merger", layout="wide")
 
@@ -50,15 +50,7 @@ def cache_uploaded_files(uploaded_files: List[st.runtime.uploaded_file_manager.U
                 "pages": page_count,
                 "size": len(file_bytes),
             }
-        )
-
-
-def move_item(current_index: int, direction: int) -> None:
-    target_index = current_index + direction
-    if target_index < 0 or target_index >= len(st.session_state["pdf_files"]):
-        return
-    files = st.session_state["pdf_files"]
-    files[current_index], files[target_index] = files[target_index], files[current_index]
+    )
 
 
 def remove_item(item_id: str) -> None:
@@ -67,17 +59,27 @@ def remove_item(item_id: str) -> None:
     st.session_state["pdf_files"] = filtered
 
 
-def flatten_pdfs(file_entries: List[dict], dpi: int) -> Tuple[bytes, int]:
+def flatten_pdfs(
+    file_entries: List[dict], dpi: int, image_format: str, jpeg_quality: int
+) -> Tuple[bytes, int]:
     output_doc = fitz.open()
     matrix = fitz.Matrix(dpi / 72.0, dpi / 72.0)
     total_pages = 0
     for entry in file_entries:
         with fitz.open(stream=entry["data"], filetype="pdf") as src_doc:
             for page in src_doc:
-                pix = page.get_pixmap(matrix=matrix, alpha=False)
-                rect = page.rect
-                new_page = output_doc.new_page(width=rect.width, height=rect.height)
-                new_page.insert_image(rect, stream=pix.tobytes("png"))
+                pix = page.get_pixmap(matrix=matrix, colorspace=fitz.csRGB, alpha=False)
+                if image_format == "JPEG":
+                    # JPEG drastically reduces size while keeping content readable.
+                    image_bytes = pix.tobytes("jpeg", quality=jpeg_quality)
+                else:
+                    image_bytes = pix.tobytes("png")
+
+                page_width = pix.width * 72.0 / dpi
+                page_height = pix.height * 72.0 / dpi
+                rect = fitz.Rect(0, 0, page_width, page_height)
+                new_page = output_doc.new_page(width=page_width, height=page_height)
+                new_page.insert_image(rect, stream=image_bytes)
                 total_pages += 1
     output_bytes = output_doc.tobytes()
     output_doc.close()
@@ -88,21 +90,28 @@ def render_uploaded_list() -> None:
     if not st.session_state["pdf_files"]:
         st.info("Upload one or more PDFs to begin. Files stay in memory only for your current session.")
         return
-    st.subheader("Merge Order")
-    for index, item in enumerate(st.session_state["pdf_files"]):
-        col_main, col_up, col_down, col_remove = st.columns([6, 1, 1, 1])
-        col_main.markdown(
-            f"{index + 1}. **{item['name']}** — {item['pages']} pages — {human_file_size(item['size'])}"
-        )
-        if col_up.button("Move Up", key=f"up-{item['id']}"):
-            move_item(index, -1)
-            st.experimental_rerun()
-        if col_down.button("Move Down", key=f"down-{item['id']}"):
-            move_item(index, 1)
-            st.experimental_rerun()
-        if col_remove.button("Remove", key=f"remove-{item['id']}"):
-            remove_item(item["id"])
-            st.experimental_rerun()
+    st.subheader("Arrange & Review PDFs")
+
+    files = st.session_state["pdf_files"]
+    display_labels = [
+        f"{item['name']} — {item['pages']} pages — {human_file_size(item['size'])} (#{item['id'][:8]})"
+        for item in files
+    ]
+    reordered = sort_items(display_labels, direction="vertical", key="pdf-order")
+
+    if reordered and reordered != display_labels:
+        mapping = {label: entry for label, entry in zip(display_labels, files)}
+        st.session_state["pdf_files"] = [mapping[label] for label in reordered]
+        st.rerun()
+
+    st.caption("Drag the items above to change their order. Use the selector below to remove a file.")
+
+    options = {f"{item['name']} ({item['pages']} pages)": item["id"] for item in files}
+    choice = st.selectbox("Remove a PDF", ["Keep all"] + list(options.keys()), index=0)
+    if choice != "Keep all":
+        remove_item(options[choice])
+        st.rerun()
+
     st.divider()
 
 
@@ -120,10 +129,18 @@ def main() -> None:
         st.write("2. Arrange their order.")
         st.write("3. Generate a flattened merged PDF.")
         dpi = st.slider("Render DPI", min_value=150, max_value=400, value=300, step=25)
+        image_format = st.radio(
+            "Image Encoding",
+            options=["JPEG", "PNG"],
+            format_func=lambda value: "JPEG (smaller, recommended)" if value == "JPEG" else "PNG (lossless, largest)",
+        )
+        jpeg_quality = 85
+        if image_format == "JPEG":
+            jpeg_quality = st.slider("JPEG Quality", min_value=60, max_value=95, value=85, step=5)
         if st.button("Clear All"):
             st.session_state["pdf_files"] = []
             st.session_state["last_output"] = None
-            st.experimental_rerun()
+            st.rerun()
 
     uploaded_files = st.file_uploader(
         "Upload one or more PDFs",
@@ -143,7 +160,9 @@ def main() -> None:
     if merge_button and can_merge:
         with st.spinner("Rendering pages as images and merging..."):
             try:
-                merged_bytes, total_pages = flatten_pdfs(st.session_state["pdf_files"], dpi)
+                merged_bytes, total_pages = flatten_pdfs(
+                    st.session_state["pdf_files"], dpi, image_format, jpeg_quality
+                )
             except Exception as exc:  # pragma: no cover - safety for unexpected errors
                 st.error(f"Failed to build merged PDF: {exc}")
                 return
@@ -154,8 +173,13 @@ def main() -> None:
             "pages": total_pages,
             "name": output_name,
             "dpi": dpi,
+            "image_format": image_format,
+            "quality": jpeg_quality,
         }
-        st.success(f"Merged PDF ready. Total pages: {total_pages} at {dpi} DPI.")
+        size_mb = len(merged_bytes) / (1024 * 1024)
+        st.success(
+            f"Merged PDF ready. Total pages: {total_pages} at {dpi} DPI using {image_format}. Size: {size_mb:.2f} MB."
+        )
 
     if st.session_state["last_output"]:
         download = st.session_state["last_output"]
