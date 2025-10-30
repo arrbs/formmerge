@@ -62,18 +62,21 @@ st.markdown(
     .sortable-container {
         background: rgba(255, 255, 255, 0.92);
         border-radius: 10px;
-        padding: 1.1rem;
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.14);
+        padding: 0.8rem;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.10);
         border: 1px solid rgba(0, 0, 50, 0.08);
+        max-height: 320px;
+        overflow-y: auto;
     }
     .sortable-item {
         border: 1px solid rgba(0, 0, 50, 0.15);
         border-radius: 6px;
-        padding: 0.75rem;
-        margin-bottom: 0.5rem;
+        padding: 0.6rem 0.75rem;
+        margin-bottom: 0.4rem;
         background: linear-gradient(95deg, rgba(210, 190, 170, 0.32) 0%, rgba(245, 245, 245, 0.95) 100%);
         color: var(--obsidian-blue);
         font-weight: 500;
+        font-size: 0.92rem;
     }
     .sortable-item:last-child {
         margin-bottom: 0;
@@ -81,25 +84,26 @@ st.markdown(
     .workflow-card {
         background: rgba(255, 255, 255, 0.94);
         border-radius: 14px;
-        padding: 1.4rem 1.8rem;
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.16);
+        padding: 1rem 1.4rem;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
         border: 1px solid rgba(0, 0, 50, 0.08);
-        margin: 1.8rem 0 1.2rem 0;
+        margin: 1.2rem 0 1rem 0;
     }
     .workflow-card .workflow-title {
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 600;
         color: var(--obsidian-blue);
-        margin-bottom: 0.8rem;
+        margin-bottom: 0.6rem;
     }
     .workflow-card ol {
         margin: 0;
         padding-left: 1.2rem;
         color: rgba(0, 0, 50, 0.78);
         font-weight: 500;
+        font-size: 0.92rem;
     }
     .workflow-card ol li {
-        margin-bottom: 0.45rem;
+        margin-bottom: 0.3rem;
     }
     </style>
     """,
@@ -191,31 +195,36 @@ def render_uploaded_list() -> None:
     if not st.session_state["pdf_files"]:
         st.info("Upload one or more PDFs to begin. Files stay in memory only for your current session.")
         return
-    st.subheader("Arrange & Review PDFs")
 
     files = st.session_state["pdf_files"]
-    display_labels = [
-        f"{item['name']} — {item['pages']} pages — {human_file_size(item['size'])} (#{item['id'][:8]})"
-        for item in files
-    ]
-    st.markdown('<div class="sortable-container">', unsafe_allow_html=True)
-    reordered = sort_items(display_labels, direction="vertical", key="pdf-order")
-    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Two-column layout: drag-sort on left, remove selector + button on right
+    col_sort, col_actions = st.columns([2.5, 1])
+    
+    with col_sort:
+        st.subheader("Merge Order")
+        display_labels = [
+            f"{item['name']} — {item['pages']} pages"
+            for item in files
+        ]
+        st.markdown('<div class="sortable-container">', unsafe_allow_html=True)
+        reordered = sort_items(display_labels, direction="vertical", key="pdf-order")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    if reordered and reordered != display_labels:
-        mapping = {label: entry for label, entry in zip(display_labels, files)}
-        st.session_state["pdf_files"] = [mapping[label] for label in reordered]
-        st.rerun()
+        if reordered and reordered != display_labels:
+            mapping = {label: entry for label, entry in zip(display_labels, files)}
+            st.session_state["pdf_files"] = [mapping[label] for label in reordered]
+            st.rerun()
 
-    st.caption("Drag the items above to change their order. Use the selector below to remove a file.")
-
-    options = {f"{item['name']} ({item['pages']} pages)": item["id"] for item in files}
-    choice = st.selectbox("Remove a PDF", ["Keep all"] + list(options.keys()), index=0)
-    if choice != "Keep all":
-        remove_item(options[choice])
-        st.rerun()
-
-    st.divider()
+    with col_actions:
+        st.subheader("Actions")
+        options = {item['name']: item["id"] for item in files}
+        choice = st.selectbox("Remove", ["–"] + list(options.keys()), index=0, label_visibility="collapsed")
+        if choice != "–":
+            remove_item(options[choice])
+            st.rerun()
+        
+        st.markdown("<br>", unsafe_allow_html=True)
 
 
 def main() -> None:
@@ -249,11 +258,9 @@ def main() -> None:
     image_format = "JPEG"
     jpeg_quality = DEFAULT_JPEG_QUALITY
 
-    info_col, clear_col = st.columns([6, 1.4])
-    with info_col:
-        st.info("Flattening at 200 DPI with JPEG quality 85 to balance clarity and file size.")
+    _, clear_col = st.columns([8, 1.2])
     with clear_col:
-        if st.button("Clear All", use_container_width=True):
+        if st.button("Clear", use_container_width=True):
             st.session_state["pdf_files"] = []
             st.session_state["last_output"] = None
             st.rerun()
@@ -271,7 +278,11 @@ def main() -> None:
     render_uploaded_list()
 
     can_merge = bool(st.session_state["pdf_files"])
-    merge_button = st.button("Create Flattened PDF", disabled=not can_merge)
+    
+    # Place merge button in a centered column for prominence
+    _, center_col, _ = st.columns([1, 2, 1])
+    with center_col:
+        merge_button = st.button("Create Flattened PDF", disabled=not can_merge, use_container_width=True, type="primary")
 
     if merge_button and can_merge:
         with st.spinner("Rendering pages as images and merging..."):
