@@ -21,13 +21,9 @@ st.markdown(
     [data-testid="stAppViewContainer"] {
         background: linear-gradient(140deg, rgba(0, 0, 50, 0.95) 0%, rgba(0, 0, 72, 0.85) 40%, #F5F5F5 100%);
     }
-    [data-testid="stSidebar"] {
-        background: linear-gradient(160deg, var(--obsidian-blue) 0%, rgba(0, 0, 72, 0.9) 55%, var(--warm-grey) 100%);
-        color: var(--fuselage-grey);
-        box-shadow: 4px 0 18px rgba(0, 0, 0, 0.2);
-    }
-    [data-testid="stSidebar"] * {
-        color: var(--fuselage-grey) !important;
+    [data-testid="stSidebar"],
+    [data-testid="stSidebarCollapsedControl"] {
+        display: none !important;
     }
     .block-container {
         background: rgba(245, 245, 245, 0.96);
@@ -81,6 +77,29 @@ st.markdown(
     }
     .sortable-item:last-child {
         margin-bottom: 0;
+    }
+    .workflow-card {
+        background: rgba(255, 255, 255, 0.94);
+        border-radius: 14px;
+        padding: 1.4rem 1.8rem;
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.16);
+        border: 1px solid rgba(0, 0, 50, 0.08);
+        margin: 1.8rem 0 1.2rem 0;
+    }
+    .workflow-card .workflow-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--obsidian-blue);
+        margin-bottom: 0.8rem;
+    }
+    .workflow-card ol {
+        margin: 0;
+        padding-left: 1.2rem;
+        color: rgba(0, 0, 50, 0.78);
+        font-weight: 500;
+    }
+    .workflow-card ol li {
+        margin-bottom: 0.45rem;
     }
     </style>
     """,
@@ -212,18 +231,29 @@ def main() -> None:
         """,
         unsafe_allow_html=True,
     )
-    st.caption("Palette · Fuselage Grey · Warm Grey · Essential Orange · Obsidian Blue")
+    st.markdown(
+        """
+        <div class="workflow-card">
+            <div class="workflow-title">Workflow</div>
+            <ol>
+                <li>Upload fillable PDFs.</li>
+                <li>Arrange their order.</li>
+                <li>Create the flattened merged PDF.</li>
+            </ol>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    with st.sidebar:
-        st.header("Workflow")
-        st.write("1. Upload fillable PDFs.")
-        st.write("2. Arrange their order.")
-        st.write("3. Generate a flattened merged PDF.")
-        st.info("Flattening at 200 DPI with JPEG quality 85 for optimal fidelity vs size.")
-        dpi = DEFAULT_DPI
-        image_format = "JPEG"
-        jpeg_quality = DEFAULT_JPEG_QUALITY
-        if st.button("Clear All"):
+    dpi = DEFAULT_DPI
+    image_format = "JPEG"
+    jpeg_quality = DEFAULT_JPEG_QUALITY
+
+    info_col, clear_col = st.columns([6, 1.4])
+    with info_col:
+        st.info("Flattening at 200 DPI with JPEG quality 85 to balance clarity and file size.")
+    with clear_col:
+        if st.button("Clear All", use_container_width=True):
             st.session_state["pdf_files"] = []
             st.session_state["last_output"] = None
             st.rerun()
