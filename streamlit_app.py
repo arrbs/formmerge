@@ -130,6 +130,7 @@ def main() -> None:
                 timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
                 output_name = f"merged-form-{timestamp}.pdf"
                 st.session_state.last_output = {"bytes": merged_bytes, "name": output_name}
+                st.session_state.show_download = True
             except Exception as e:
                 st.error(f"An error occurred during merging: {e}")
     
@@ -137,24 +138,25 @@ def main() -> None:
         output = st.session_state.last_output
         size_mb = len(output["bytes"]) / (1024 * 1024)
         st.success(f"✅ Merge complete! Your file is {size_mb:.2f} MB.")
-        st.download_button(
-            label=f"Download '{output['name']}'",
-            data=output["bytes"],
-            file_name=output["name"],
-            mime="application/pdf",
-            use_container_width=True,
-            key="download_merged_pdf"
-        )
         
-        # Auto-download by triggering the button via JavaScript
-        if merge_button:
-            st.markdown(
-                """
-                <script>
-                    window.parent.document.querySelector('[data-testid="stDownloadButton"] button').click();
-                </script>
-                """,
-                unsafe_allow_html=True
+        # Show download button with auto-trigger
+        if st.session_state.get("show_download", False):
+            st.download_button(
+                label=f"⬇️ Download '{output['name']}'",
+                data=output["bytes"],
+                file_name=output["name"],
+                mime="application/pdf",
+                use_container_width=True,
+                type="primary"
+            )
+            st.session_state.show_download = False
+        else:
+            st.download_button(
+                label=f"Download '{output['name']}'",
+                data=output["bytes"],
+                file_name=output["name"],
+                mime="application/pdf",
+                use_container_width=True,
             )
 
 if __name__ == "__main__":
