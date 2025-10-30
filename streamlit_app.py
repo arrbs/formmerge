@@ -9,6 +9,106 @@ from streamlit_sortables import sort_items
 
 st.set_page_config(page_title="Form Merge", layout="centered")
 
+# Apply custom THC color theme
+st.markdown("""
+    <style>
+    /* Primary color scheme */
+    :root {
+        --fuselage-grey: #F5F5F5;
+        --warm-grey: #D2BEAA;
+        --essential-orange: #FF4100;
+        --obsidian-blue: #000032;
+        --cool-gray-2: #E6E6E6;
+        --brownish: #826450;
+        --red: #EB1900;
+        --warm-grey-1: #E1D7CD;
+        --orange: #FF7D32;
+        --blue: #0000B9;
+    }
+    
+    /* Main app background */
+    .stApp {
+        background-color: #F5F5F5;
+    }
+    
+    /* Headers */
+    h1, h2, h3 {
+        color: #000032 !important;
+    }
+    
+    /* Primary buttons */
+    .stButton > button[kind="primary"] {
+        background-color: #FF4100 !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 600 !important;
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        background-color: #EB1900 !important;
+        border: none !important;
+    }
+    
+    /* Secondary buttons */
+    .stButton > button {
+        background-color: #D2BEAA !important;
+        color: #000032 !important;
+        border: none !important;
+    }
+    
+    .stButton > button:hover {
+        background-color: #826450 !important;
+        color: white !important;
+    }
+    
+    /* Download button */
+    .stDownloadButton > button {
+        background-color: #FF4100 !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 600 !important;
+    }
+    
+    .stDownloadButton > button:hover {
+        background-color: #FF7D32 !important;
+    }
+    
+    /* Containers with borders */
+    [data-testid="stContainer"] {
+        background-color: white;
+        border: 2px solid #E6E6E6 !important;
+        border-radius: 8px;
+    }
+    
+    /* Expander */
+    .streamlit-expanderHeader {
+        background-color: white !important;
+        color: #000032 !important;
+        border: 2px solid #E6E6E6 !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Success message */
+    .stSuccess {
+        background-color: #E1D7CD !important;
+        color: #000032 !important;
+        border-left: 4px solid #FF4100 !important;
+    }
+    
+    /* File uploader */
+    [data-testid="stFileUploader"] {
+        background-color: white;
+        border: 2px dashed #D2BEAA !important;
+        border-radius: 8px;
+    }
+    
+    /* Text elements */
+    p, .stText {
+        color: #000032 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 def init_state() -> None:
     """Initializes session state variables."""
     if "pdf_files" not in st.session_state:
