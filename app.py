@@ -7,7 +7,7 @@ import fitz
 import streamlit as st
 from streamlit_sortables import sort_items
 
-st.set_page_config(page_title="Obsidian Merge Studio", layout="wide")
+st.set_page_config(page_title="THC Form Merge Tool", layout="wide")
 
 st.markdown(
     """
@@ -19,17 +19,29 @@ st.markdown(
         --obsidian-blue: #000032;
     }
     [data-testid="stAppViewContainer"] {
-        background-color: var(--fuselage-grey);
-        color: var(--obsidian-blue);
+        background: linear-gradient(140deg, rgba(0, 0, 50, 0.95) 0%, rgba(0, 0, 72, 0.85) 40%, #F5F5F5 100%);
     }
     [data-testid="stSidebar"] {
-        background-color: var(--warm-grey);
+        background: linear-gradient(160deg, var(--obsidian-blue) 0%, rgba(0, 0, 72, 0.9) 55%, var(--warm-grey) 100%);
+        color: var(--fuselage-grey);
+        box-shadow: 4px 0 18px rgba(0, 0, 0, 0.2);
     }
     [data-testid="stSidebar"] * {
-        color: var(--obsidian-blue) !important;
+        color: var(--fuselage-grey) !important;
     }
-    h1, h2, h3, h4, h5, h6, label, p, span {
+    .block-container {
+        background: rgba(245, 245, 245, 0.96);
+        border-radius: 18px;
+        padding: 2.5rem 3rem 3rem 3rem;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+        border: 3px solid rgba(0, 0, 50, 0.08);
+    }
+    h1, h2, h3, h4, h5, h6 {
         color: var(--obsidian-blue);
+        letter-spacing: 0.02em;
+    }
+    label, p, span, .stMarkdown {
+        color: rgba(0, 0, 50, 0.85);
     }
     .stButton>button, .stDownloadButton>button {
         background-color: var(--essential-orange);
@@ -37,10 +49,12 @@ st.markdown(
         color: white;
         border-radius: 6px;
         font-weight: 600;
+        box-shadow: 0 10px 25px rgba(255, 65, 0, 0.35);
     }
     .stButton>button:hover, .stDownloadButton>button:hover {
         background-color: #cc3300;
         color: white;
+        box-shadow: 0 8px 22px rgba(255, 65, 0, 0.45);
     }
     [data-testid="stSlider"] [data-baseweb="slider"] > div > div {
         background-color: var(--essential-orange);
@@ -49,21 +63,19 @@ st.markdown(
         background-color: white;
         border: 2px solid var(--essential-orange);
     }
-    .block-container {
-        padding-top: 2rem;
-    }
     .sortable-container {
-        background-color: white;
-        border-radius: 8px;
-        padding: 1rem;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 10px;
+        padding: 1.1rem;
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.14);
+        border: 1px solid rgba(0, 0, 50, 0.08);
     }
     .sortable-item {
         border: 1px solid rgba(0, 0, 50, 0.15);
         border-radius: 6px;
         padding: 0.75rem;
         margin-bottom: 0.5rem;
-        background-color: var(--fuselage-grey);
+        background: linear-gradient(95deg, rgba(210, 190, 170, 0.32) 0%, rgba(245, 245, 245, 0.95) 100%);
         color: var(--obsidian-blue);
         font-weight: 500;
     }
@@ -186,17 +198,17 @@ def render_uploaded_list() -> None:
 def main() -> None:
     init_state()
 
-    st.title("Obsidian Merge Studio")
-    st.title("Obsidian Merge Studio")
+    st.title("THC Form Merge Tool")
     st.markdown(
         """
-        <div style='background:#FFFFFF;border-left:6px solid #FF4100;padding:1rem 1.5rem;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);'>
-            Preserve the fidelity of every checkbox, signature, and handwritten note by rendering PDFs into true image layers before combining them.
+        <div style='display:flex;gap:1rem;align-items:center;background:linear-gradient(125deg, rgba(0,0,50,0.92) 0%, rgba(0,0,72,0.85) 55%, rgba(255,65,0,0.9) 110%);padding:1.2rem 1.6rem;border-radius:14px;box-shadow:0 18px 32px rgba(0, 0, 0, 0.24);border:1px solid rgba(255,65,0,0.35);'>
+            <div style='width:12px;height:64px;background:#FF4100;border-radius:999px;box-shadow:0 0 18px rgba(255,65,0,0.65);'></div>
+            <div style='color:#F5F5F5;font-size:1.05rem;line-height:1.55;font-weight:500;'>Preserve the fidelity of every checkbox, signature, and handwritten note by rendering PDFs into true image layers before combining them.</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    st.caption("Palette: Fuselage Grey, Warm Grey, Essential Orange, Obsidian Blue")
+    st.caption("Palette · Fuselage Grey · Warm Grey · Essential Orange · Obsidian Blue")
 
     with st.sidebar:
         st.header("Workflow")
