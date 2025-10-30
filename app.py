@@ -54,6 +54,12 @@ st.markdown(
         color: rgba(245, 245, 255, 0.9);
         max-width: 720px;
     }
+    .block-container p,
+    .block-container label,
+    .block-container span,
+    .block-container .stMarkdown {
+        color: rgba(245, 245, 255, 0.86);
+    }
     .steps-strip {
         display: flex;
         flex-wrap: wrap;
@@ -92,6 +98,13 @@ st.markdown(
         box-shadow: 0 32px 68px rgba(0, 0, 0, 0.28);
         border: 1px solid rgba(0, 0, 50, 0.08);
         position: relative;
+        color: rgba(5, 5, 30, 0.88);
+    }
+    .panel-card p,
+    .panel-card label,
+    .panel-card span,
+    .panel-card .stMarkdown {
+        color: rgba(5, 5, 30, 0.75) !important;
     }
     .panel-card--order {
         background: rgba(255, 255, 255, 0.98);
@@ -112,7 +125,7 @@ st.markdown(
         letter-spacing: 0.08em;
         font-size: 0.78rem;
         font-weight: 700;
-        color: rgba(0, 0, 50, 0.5);
+        color: rgba(0, 0, 50, 0.45);
         margin-bottom: 0.55rem;
     }
     .order-summary {
@@ -196,11 +209,15 @@ st.markdown(
         background: #FFFFFF !important;
         border-radius: 12px !important;
         border: 1px solid rgba(0, 0, 50, 0.12) !important;
-        color: var(--obsidian-blue) !important;
+        color: rgba(5, 5, 30, 0.88) !important;
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
     }
     div[data-baseweb="select"] svg {
         color: rgba(0, 0, 50, 0.65);
+    }
+    .panel-card .stButton>button,
+    .panel-card .stDownloadButton>button {
+        box-shadow: 0 12px 26px rgba(255, 65, 0, 0.28);
     }
     .spacer-sm {
         height: 1.4rem;
@@ -452,12 +469,15 @@ def main() -> None:
 
     if st.session_state["last_output"]:
         download = st.session_state["last_output"]
-        st.download_button(
-            label="Download merged PDF",
-            data=download["bytes"],
-            file_name=download["name"],
-            mime="application/pdf",
-        )
+        left_dl, center_dl, right_dl = st.columns([1, 2, 1])
+        with center_dl:
+            st.download_button(
+                label="Download merged PDF",
+                data=download["bytes"],
+                file_name=download["name"],
+                mime="application/pdf",
+                use_container_width=True,
+            )
 
 
 if __name__ == "__main__":
