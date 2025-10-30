@@ -71,7 +71,7 @@ def flatten_pdfs(
                 pix = page.get_pixmap(matrix=matrix, colorspace=fitz.csRGB, alpha=False)
                 if image_format == "JPEG":
                     # JPEG drastically reduces size while keeping content readable.
-                    image_bytes = pix.tobytes("jpeg", quality=jpeg_quality)
+                    image_bytes = pix.tobytes("jpeg", jpg_quality=jpeg_quality)
                 else:
                     image_bytes = pix.tobytes("png")
 
