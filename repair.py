@@ -387,10 +387,8 @@ def fix_zapfdingbats_appearance(doc: fitz.Document) -> FontFixReport:
     std_xref_factory = lambda: _ensure_standard_zapf(doc)
 
     for widget_xref in terminals:
-        wdef = doc.xref_object(widget_xref)
-        if "/FT /Btn" not in wdef and "/FT/Btn" not in wdef:
-            continue
-
+        # No /FT /Btn gate — /FT is typically inherited from /Parent and missing
+        # on the widget itself. The subset-font check below is the real filter.
         for stream_xref in _xobject_stream_refs_from_widget(doc, widget_xref):
             if stream_xref in patched_streams:
                 continue
