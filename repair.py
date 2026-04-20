@@ -263,16 +263,18 @@ def _is_subset_zapf(doc: fitz.Document, font_xref: int) -> bool:
 
 
 def _rewrite_stream_checkmark(data: bytes) -> Tuple[bytes, bool]:
-    """Rewrite the rendered char in a BT/ET block from 0x21 to 0x04.
+    """Rewrite the rendered char from '!' (0x21) to '4' (0x34).
 
-    Only touches literal ``(!)`` Tj operands that draw a single ``!``.
+    Standard ZapfDingbats maps ASCII '4' (0x34) to the heavy-checkmark glyph
+    (PostScript name ``a20``), not the control char 0x04. Subset fonts that
+    PDF Expert embeds put the checkmark at '!' (0x21) instead.
     """
     changed = False
 
     def repl(m: re.Match) -> bytes:
         nonlocal changed
         changed = True
-        return b"(\\004) Tj"
+        return b"(4) Tj"
 
     out = re.sub(rb"\(\s*!\s*\)\s*Tj", repl, data)
     return out, changed
@@ -448,6 +450,91 @@ def fix_zapfdingbats_appearance(doc: fitz.Document) -> FontFixReport:
     return report
 
 
+# ---------- repair 3: fix degenerate /Off appearance BBoxes ----------------
+
+
+_ZERO_BBOX_RE = re.compile(
+    r"/BBox\s*\[\s*0\s+0\s+0\s+0\s*\]"
+)
+_BBOX_RE = re.compile(r"/BBox\s*\[\s*([^\]]*?)\s*\]")
+
+
+@dataclass
+class BBoxFixReport:
+    bboxes_fixed: int = 0
+
+
+def fix_degenerate_bboxes(doc: fitz.Document) -> BBoxFixReport:
+    """Replace /BBox [0 0 0 0] on widget appearance XObjects.
+
+    PDF Expert writes /Off-state appearances with a zero-area BBox. When
+    MuPDF's bake() scales the widget /Rect into that BBox, it divides by
+    zero and emits FLT_MAX in the page's cm operator, scrambling every
+    neighbouring widget invocation. Patching the BBox to match either the
+    sibling /Yes state or the widget's /Rect dimensions fixes the scale.
+    """
+    report = BBoxFixReport()
+
+    for widget_xref in _acroform_field_xrefs(doc):
+        wdef = doc.xref_object(widget_xref)
+        ap_m = re.search(r"/AP\s+(\d+)\s+0\s+R", wdef)
+        if not ap_m:
+            continue
+        ap = doc.xref_object(int(ap_m.group(1)))
+
+        # Widget /Rect gives us fallback dimensions.
+        rect_m = re.search(
+            r"/Rect\s*\[\s*([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s*\]",
+            wdef,
+        )
+        if not rect_m:
+            continue
+        x0, y0, x1, y1 = (float(rect_m.group(i)) for i in range(1, 5))
+        rect_w, rect_h = abs(x1 - x0), abs(y1 - y0)
+        if rect_w <= 0 or rect_h <= 0:
+            continue
+
+        # Walk /N (and /D) state dicts to collect XObject state xrefs.
+        state_xrefs: List[int] = []
+        for key in ("N", "D"):
+            m = re.search(rf"/{key}\s+(\d+)\s+0\s+R", ap)
+            if not m:
+                continue
+            target = int(m.group(1))
+            body = doc.xref_object(target)
+            if "/Subtype /Form" in body or "/Subtype/Form" in body:
+                state_xrefs.append(target)
+            else:
+                state_xrefs.extend(int(x) for x in _REF_RE.findall(body))
+
+        # Find a reference BBox from any non-degenerate sibling.
+        ref_bbox: Optional[str] = None
+        for sx in state_xrefs:
+            try:
+                sb = doc.xref_object(sx)
+            except Exception:
+                continue
+            bbm = _BBOX_RE.search(sb)
+            if bbm and not _ZERO_BBOX_RE.search(sb):
+                ref_bbox = bbm.group(1).strip()
+                break
+        if ref_bbox is None:
+            ref_bbox = f"0 0 {rect_w:g} {rect_h:g}"
+
+        for sx in state_xrefs:
+            try:
+                sb = doc.xref_object(sx)
+            except Exception:
+                continue
+            if not _ZERO_BBOX_RE.search(sb):
+                continue
+            new_sb = _ZERO_BBOX_RE.sub(f"/BBox [ {ref_bbox} ]", sb, count=1)
+            doc.update_object(sx, new_sb)
+            report.bboxes_fixed += 1
+
+    return report
+
+
 # ---------- convenience ------------------------------------------------------
 
 
@@ -455,10 +542,12 @@ def fix_zapfdingbats_appearance(doc: fitz.Document) -> FontFixReport:
 class FullRepairReport:
     relink: RelinkReport
     fonts: FontFixReport
+    bboxes: BBoxFixReport = field(default_factory=BBoxFixReport)
 
 
 def repair_document(doc: fitz.Document) -> FullRepairReport:
-    """Run both repairs on a document in place."""
+    """Run all repairs on a document in place."""
     relink = relink_radio_kids(doc)
     fonts = fix_zapfdingbats_appearance(doc)
-    return FullRepairReport(relink=relink, fonts=fonts)
+    bboxes = fix_degenerate_bboxes(doc)
+    return FullRepairReport(relink=relink, fonts=fonts, bboxes=bboxes)
