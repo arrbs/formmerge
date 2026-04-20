@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local test/output PDFs — never commit form data
+*.pdf
