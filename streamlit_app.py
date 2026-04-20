@@ -24,6 +24,8 @@ from streamlit_sortables import sort_items
 
 from repair import FontFixReport, FullRepairReport, RelinkReport, repair_document
 
+VERSION = "v0.3"
+
 st.set_page_config(page_title="Form Merge", page_icon="📄", layout="centered")
 
 st.markdown(
@@ -168,7 +170,12 @@ def _merge(entries: List[PDFEntry], progress) -> tuple[bytes, FullRepairReport]:
 
 
 def _render_header() -> None:
-    st.title("Form Merge")
+    c1, c2 = st.columns([6, 1])
+    c1.title("Form Merge")
+    c2.markdown(
+        f"<div style='text-align:right; padding-top:1.5rem; color:#888; font-size:0.85rem;'>{VERSION}</div>",
+        unsafe_allow_html=True,
+    )
     st.caption(
         "Repairs PDF Expert damage, flattens form fields, and merges into one "
         "non-modifiable PDF."
